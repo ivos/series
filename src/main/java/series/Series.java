@@ -53,9 +53,14 @@ public class Series {
     }
 
     public static List<Double> trend(List<Double> input, int cycleLength, WeightFunction weightFunction) {
-        List<Double> result = new ArrayList<>(input.size());
+        List<Double> result = new ArrayList<>(input.size() + cycleLength);
         for (int index = 0; index < input.size(); index++) {
             result.add(floatingAverage(input, cycleLength, weightFunction, index));
+        }
+        double lastTrend = result.get(input.size() - 1);
+        double lastDiff = lastTrend - result.get(input.size() - 2);
+        for (int index = 0; index < cycleLength; index++) {
+            result.add(round(lastTrend + (1 + index) * lastDiff));
         }
         return result;
     }
@@ -100,10 +105,18 @@ public class Series {
     public static List<Double> cycle(List<Double> input, List<Double> trend, int cycleLength,
                                      int metaCycleLength, WeightFunction weightFunction) {
         List<Double> percentTrend = cyclePercentTrend(input, trend, cycleLength, metaCycleLength, weightFunction);
-        List<Double> result = new ArrayList<>(input.size());
+        List<Double> result = new ArrayList<>(input.size() + cycleLength);
         for (int index = 0; index < input.size(); index++) {
-            double value = trend.get(index) * (1 + percentTrend.get(index) / 100);
-            result.add(round(value));
+            double trendValue = trend.get(index);
+            double percent = percentTrend.get(index);
+            double cycleValue = trendValue * (1 + percent / 100);
+            result.add(round(cycleValue));
+        }
+        for (int index = 0; index < cycleLength; index++) {
+            double trendValue = trend.get(input.size() + index);
+            double percent = percentTrend.get(input.size() - cycleLength + index);
+            double cycleValue = trendValue * (1 + percent / 100);
+            result.add(round(cycleValue));
         }
         return result;
     }
