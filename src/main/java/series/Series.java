@@ -25,8 +25,9 @@ public class Series {
     /**
      * Based on inCycle returns index, index-1, index+1, index-2, index+2, etc.
      * Wraps around limits.
+     * Returns null in case of overflow.
      */
-    public static int trendIndex(int index, int size, int cycleLength, int inCycle) {
+    public static Integer trendIndex(int index, int size, int cycleLength, int inCycle) {
         int offset = (1 + inCycle) / 2 * (1 == inCycle % 2 ? -1 : 1);
         int result = index + offset;
         if (result < 0) {
@@ -35,7 +36,7 @@ public class Series {
             result = size - 1 - cycleLength / 2 - offset;
         }
         if (result < 0 || result >= size) {
-            throw new RuntimeException("Cannot wrap trend index, cycle length must be less than series length.");
+            return null;
         }
         return result;
     }
@@ -44,10 +45,14 @@ public class Series {
             List<Double> input, int cycleLength, WeightFunction weightFunction, int index) {
         List<Double> values = new ArrayList<>(cycleLength + 1);
         List<Double> weights = new ArrayList<>(cycleLength + 1);
+        List<Integer> indexes = new ArrayList<>();
         for (int inCycle = 0; inCycle < cycleLength + 1; inCycle++) {
-            int trendIndex = trendIndex(index, input.size(), cycleLength, inCycle);
-            values.add(input.get(trendIndex));
-            weights.add(weightFunction.weight(Math.abs(trendIndex - index)));
+            Integer trendIndex = trendIndex(index, input.size(), cycleLength, inCycle);
+            if (null != trendIndex && !indexes.contains(trendIndex)) {
+                indexes.add(trendIndex);
+                values.add(input.get(trendIndex));
+                weights.add(weightFunction.weight(Math.abs(trendIndex - index)));
+            }
         }
         return average(values, weights);
     }

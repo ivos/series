@@ -17,4 +17,14 @@ public class CycleTest {
                 Arrays.asList(2.56, 1.93, 5.21, 3.34, 8.15, 5.94, 10.33, 7.67, 12.76, 9.37, 15.31);
         assertArrayEquals(expected.toArray(), cycle.toArray());
     }
+
+    @Test
+    public void shortData() {
+        List<Double> cycle = Series.cycle(
+                Arrays.asList(2., 1., 5.),
+                Arrays.asList(2., 3., 4., 11., 12.), 2, 2, distance -> (1 - 0.1 * distance));
+        List<Double> expected =
+                Arrays.asList(2.24, 1., 4.53, 3.67, 13.58);
+        assertArrayEquals(expected.toArray(), cycle.toArray());
+    }
 }
