@@ -9,6 +9,16 @@ public class Series {
         return Math.round(value * 100) / 100.;
     }
 
+    public static int coerce(int value, int minInc, int maxExc) {
+        if (value < minInc) {
+            return minInc;
+        }
+        if (value >= maxExc) {
+            return maxExc;
+        }
+        return value;
+    }
+
     public static double average(List<Double> values, List<Double> weights) {
         if (values.size() != weights.size()) {
             throw new RuntimeException(
@@ -62,10 +72,12 @@ public class Series {
         for (int index = 0; index < input.size(); index++) {
             result.add(floatingAverage(input, cycleLength, weightFunction, index));
         }
-        double lastTrend = result.get(input.size() - 1);
-        double lastDiff = lastTrend - result.get(input.size() - 2);
-        for (int index = 0; index < cycleLength; index++) {
-            result.add(round(lastTrend + (1 + index) * lastDiff));
+        if (input.size() > 0) {
+            double lastTrend = result.get(input.size() - 1);
+            double lastDiff = lastTrend - result.get(coerce(input.size() - 2, 0, result.size()));
+            for (int index = 0; index < cycleLength; index++) {
+                result.add(round(lastTrend + (1 + index) * lastDiff));
+            }
         }
         return result;
     }
@@ -117,11 +129,13 @@ public class Series {
             double cycleValue = trendValue * (1 + percent / 100);
             result.add(round(cycleValue));
         }
-        for (int index = 0; index < cycleLength; index++) {
-            double trendValue = trend.get(input.size() + index);
-            double percent = percentTrend.get(input.size() - cycleLength + index);
-            double cycleValue = trendValue * (1 + percent / 100);
-            result.add(round(cycleValue));
+        if (input.size() > 0) {
+            for (int index = 0; index < cycleLength; index++) {
+                double trendValue = trend.get(input.size() + index);
+                double percent = percentTrend.get(coerce(input.size() + index - cycleLength, 0, percentTrend.size()));
+                double cycleValue = trendValue * (1 + percent / 100);
+                result.add(round(cycleValue));
+            }
         }
         return result;
     }

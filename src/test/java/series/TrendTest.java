@@ -28,4 +28,18 @@ public class TrendTest {
         List<Double> expected = Arrays.asList(2.56, 2.61, 2.78, 2.95, 3.12, 3.29);
         assertArrayEquals(expected.toArray(), trend.toArray());
     }
+
+    @Test
+    public void singleValueData() {
+        List<Double> trend = Series.trend(Arrays.asList(2.), 3, distance -> (1 - 0.1 * distance));
+        List<Double> expected = Arrays.asList(2., 2., 2., 2.);
+        assertArrayEquals(expected.toArray(), trend.toArray());
+    }
+
+    @Test
+    public void emptyData() {
+        List<Double> trend = Series.trend(Arrays.asList(), 3, distance -> (1 - 0.1 * distance));
+        List<Double> expected = Arrays.asList();
+        assertArrayEquals(expected.toArray(), trend.toArray());
+    }
 }
